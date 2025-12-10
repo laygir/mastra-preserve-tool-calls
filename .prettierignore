@@ -1,0 +1,9 @@
+node_modules
+coverage
+.env
+.husky/_/
+dist/
+*.log
+.git/
+.prettierrc
+*.json
