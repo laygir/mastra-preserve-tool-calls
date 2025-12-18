@@ -87,9 +87,9 @@ Example of what above payload is converted to by Mastra and sent to the model:
 
 ### Steps to reproduce:
 
-do `npm install --legacy-peer-deps` to install the dependencies with the patch applied. (see package.json `@mastra/core` version)
+`npm install` to install the dependencies.
 
-do `npm run dev` to start the application.
+`npm run dev` to start the application.
 
 use the following curl command to test the application:
 
@@ -175,9 +175,6 @@ curl --location 'http://localhost:3000/v1/agent' \
 
 From the response of the above curl command, look at the finish chunk (`"type": "finish"`) and see the path `payload.metadata.request.body.messages:[]`.
 Expectation is to see the original messages are preserved in the shape that is expected by OpenAI without losing the `tool_calls` and `tool_call_id` fields with correct roles.
-
-As of 10th of December:
-When using the patched version `0.0.0-fix-10386-preserve-tool-calls-in-convert-aisdk-20251201210222`, the tool calls are failing due to multiple tool calls being made.
 
 See below the partial finish chunk (`payload.metadata.request.body`) and notice earlier messages with `"role": "tool"` and `"role": "assistant"` + `tool_calls` are missing.
 
