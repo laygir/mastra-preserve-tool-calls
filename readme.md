@@ -100,8 +100,74 @@ curl --location 'http://localhost:3000/v1/agent' \
   "model": "gpt-4o",
   "messages": [
     {
+      "role": "system",
+      "content": "\n      You are a helpful weather assistant that provides accurate weather information and can help planning activities based on the weather.\n\n      Your primary function is to help users get weather details for specific locations. When responding:\n      - Always ask for a location if none is provided\n      - If the location name isn'\''t in English, please translate it\n      - If giving a location with multiple parts (e.g. \"New York, NY\"), use the most relevant part (e.g. \"New York\")\n      - Include relevant details like humidity, wind conditions, and precipitation\n      - Keep responses concise but informative\n      - If the user asks for activities and provides the weather forecast, suggest activities based on the weather forecast.\n      - If the user asks for activities, respond in the format they request.\n\n      Use the weatherTool to fetch current weather data.\n"
+    },
+    {
       "role": "user",
-      "content": "How is weather in Amsterdam?"
+      "content": "hey"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! How can I assist you today? If you need weather information, please provide a location."
+    },
+    {
+      "role": "user",
+      "content": "What is the weather in Amsterdam?"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_HAkmnRCIre64j9wKbLmiclLg",
+          "type": "function",
+          "function": {
+            "name": "weatherTool",
+            "arguments": "{\"location\":\"Amsterdam\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_HAkmnRCIre64j9wKbLmiclLg",
+      "content": "{\"conditions\":\"Overcast\",\"feelsLike\":8.2,\"humidity\":90,\"location\":\"Amsterdam\",\"temperature\":10,\"windGust\":20.2,\"windSpeed\":9.4}"
+    },
+    {
+      "role": "assistant",
+      "content": "The current weather in Amsterdam is as follows:\n\n- **Temperature:** 10°C\n- **Feels Like:** 8.2°C\n- **Conditions:** Overcast\n- **Humidity:** 90%\n- **Wind Speed:** 9.4 km/h\n- **Wind Gusts:** 20.2 km/h\n\nIf you need any more information or have specific activities in mind, let me know!"
+    },
+    {
+      "role": "user",
+      "content": "What is the weather in London?"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_c14t2kROAF6gy31u2mqQXggq",
+          "type": "function",
+          "function": {
+            "name": "weatherTool",
+            "arguments": "{\"location\":\"London\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_c14t2kROAF6gy31u2mqQXggq",
+      "content": "{\"conditions\":\"Overcast\",\"feelsLike\":8.5,\"humidity\":84,\"location\":\"London\",\"temperature\":10.7,\"windGust\":24.5,\"windSpeed\":12}"
+    },
+    {
+      "role": "assistant",
+      "content": "The current weather in London is as follows:,,Temperature: 10.7°C,Feels Like: 8.5°C,Conditions: Overcast,Humidity: 84%,Wind Speed: 12 km/h,Wind Gusts: 24.5 km/h,If you have any specific activities in mind or need more information, feel free to ask!"
+    },
+    {
+      "role": "user",
+      "content": "What is the weather in New York?"
     }
   ]
 }'
@@ -112,3 +178,66 @@ Expectation is to see the original messages are preserved in the shape that is e
 
 As of 10th of December:
 When using the patched version `0.0.0-fix-10386-preserve-tool-calls-in-convert-aisdk-20251201210222`, the tool calls are failing due to multiple tool calls being made.
+
+See below the partial finish chunk (`payload.metadata.request.body`) and notice earlier messages with `"role": "tool"` and `"role": "assistant"` + `tool_calls` are missing.
+
+```
+{
+  "body": {
+    "model": "gpt-4o-mini",
+    "messages": [
+      {
+        "role": "system",
+        "content": "\n      You are a helpful weather assistant that provides accurate weather information and can help planning activities based on the weather.\n\n      Your primary function is to help users get weather details for specific locations. When responding:\n      - Always ask for a location if none is provided\n      - If the location name isn't in English, please translate it\n      - If giving a location with multiple parts (e.g. \"New York, NY\"), use the most relevant part (e.g. \"New York\")\n      - Include relevant details like humidity, wind conditions, and precipitation\n      - Keep responses concise but informative\n      - If the user asks for activities and provides the weather forecast, suggest activities based on the weather forecast.\n      - If the user asks for activities, respond in the format they request.\n\n      Use the weatherTool to fetch current weather data.\n"
+      },
+      {
+        "role": "user",
+        "content": "hey"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you today? If you need weather information, please provide a location."
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in Amsterdam?"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"conditions\":\"Overcast\",\"feelsLike\":8.2,\"humidity\":90,\"location\":\"Amsterdam\",\"temperature\":10,\"windGust\":20.2,\"windSpeed\":9.4}The current weather in Amsterdam is as follows:\n\n- **Temperature:** 10°C\n- **Feels Like:** 8.2°C\n- **Conditions:** Overcast\n- **Humidity:** 90%\n- **Wind Speed:** 9.4 km/h\n- **Wind Gusts:** 20.2 km/h\n\nIf you need any more information or have specific activities in mind, let me know!"
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in London?"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"conditions\":\"Overcast\",\"feelsLike\":8.5,\"humidity\":84,\"location\":\"London\",\"temperature\":10.7,\"windGust\":24.5,\"windSpeed\":12}The current weather in London is as follows:,,Temperature: 10.7°C,Feels Like: 8.5°C,Conditions: Overcast,Humidity: 84%,Wind Speed: 12 km/h,Wind Gusts: 24.5 km/h,If you have any specific activities in mind or need more information, feel free to ask!"
+      },
+      {
+        "role": "user",
+        "content": "What is the weather in New York?"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "call_YvmlI3lIcpAn8z4nILyzY9eE",
+            "type": "function",
+            "function": {
+              "name": "weatherTool",
+              "arguments": "{\"location\":\"New York\"}"
+            }
+          }
+        ]
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call_YvmlI3lIcpAn8z4nILyzY9eE",
+        "content": "{\"conditions\":\"Mainly clear\",\"feelsLike\":-4.4,\"humidity\":83,\"location\":\"New York\",\"temperature\":-0.9,\"windGust\":16.2,\"windSpeed\":6.1}"
+      }
+    ]
+  }
+}
+```
